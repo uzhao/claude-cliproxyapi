@@ -79,6 +79,16 @@ export function isProxy(s: Settings | null): boolean {
   return hasProxyOrOverride(s);
 }
 
+/** 当前代理选中的模型 ID（取任一别名的覆盖值）；透传模式返回 null。 */
+export function activeModel(s: Settings | null): string | null {
+  if (!s || !isProxy(s)) {
+    return null;
+  }
+  const overrides = s[OVERRIDES_KEY] as Record<string, unknown> | undefined;
+  const first = overrides?.[MODEL_ALIASES[0]];
+  return typeof first === 'string' ? first : null;
+}
+
 function hasProxyOrOverride(s: Settings | null): boolean {
   if (!s) {
     return false;

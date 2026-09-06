@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { MODEL_ALIASES, readSettings, setProxy, setPass, writeSettings, isProxy } from './settings';
+import { MODEL_ALIASES, readSettings, setProxy, setPass, writeSettings, isProxy, activeModel } from './settings';
 
 function tmpFile(t: any): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpa-settings-'));
@@ -52,6 +52,18 @@ test('setProxy 保留既有字段，只覆盖 env 与 modelOverrides', (t) => {
   assert.deepStrictEqual(s.permissions, { allow: ['Bash(npm)'] });
   assert.strictEqual(s.env?.SOME_VAR, 'x');
   assert.strictEqual(s.env?.ANTHROPIC_BASE_URL, 'http://127.0.0.1:8317');
+});
+
+test('activeModel 返回当前代理模型，透传返回 null', (t) => {
+  const p = tmpFile(t);
+  assert.strictEqual(activeModel(readSettings(p)), null); // 文件不存在 → 透传
+  setProxy(p, 'http://127.0.0.1:8317', 'tier-2');
+  assert.strictEqual(activeModel(readSettings(p)), 'tier-2');
+  setPass(p);
+  assert.strictEqual(activeModel(readSettings(p)), null);
+  // 只有 baseURL 没有 modelOverrides（非本插件写入）→ null
+  writeSettings(p, { env: { ANTHROPIC_BASE_URL: 'http://127.0.0.1:8317' } });
+  assert.strictEqual(activeModel(readSettings(p)), null);
 });
 
 test('setPass 删除 baseURL 与 modelOverrides，保留其他字段', (t) => {

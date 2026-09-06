@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { setProxy, setPass } from './settings';
+import { setProxy, setPass, readSettings, activeModel } from './settings';
 import { fetchModelIds } from './models';
 
 const PASS_LABEL = '透传';
@@ -18,11 +18,21 @@ function baseUrl(): string {
   return cfg.replace(/\/+$/, '');
 }
 
+/** 读取当前生效的模式文案：代理模型 ID 或透传。 */
+function currentLabel(): string {
+  const model = activeModel(readSettings(workspaceSettingsPath()));
+  return model ?? PASS_LABEL;
+}
+
+function refreshStatusBar(): void {
+  statusBar.text = `$(arrow-swap) Claude: ${currentLabel()}`;
+  statusBar.tooltip = '切换 Claude Code 到透传或本地 CLIProxyAPI 模型';
+}
+
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBar.command = 'claudeCliProxy.switchModel';
-  statusBar.text = '$(arrow-swap) Claude: 模型';
-  statusBar.tooltip = '切换 Claude Code 到透传或本地 CLIProxyAPI 模型';
+  refreshStatusBar();
   statusBar.show();
   context.subscriptions.push(statusBar);
 
@@ -66,6 +76,7 @@ async function switchModel(): Promise<void> {
   } else {
     return;
   }
+  refreshStatusBar();
 
   // Claude Code 必须重启窗口才能读到最新 settings.json（baseURL / modelOverrides）。
   await vscode.commands.executeCommand('workbench.action.reloadWindow');
