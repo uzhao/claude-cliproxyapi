@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { setProxy, setPass, readSettings, activeModel } from './settings';
+import { setProxy, setPass, readSettings, activeModel, isProxy } from './settings';
 import { fetchModelIds } from './models';
+import { shouldReloadWindow } from './reload';
 
 const PASS_LABEL = '透传';
 
@@ -67,17 +68,28 @@ async function switchModel(): Promise<void> {
   }
 
   const wsPath = workspaceSettingsPath();
+  const currentProxy = isProxy(readSettings(wsPath));
+  let nextProxy: boolean;
+  let message: string;
   if (picked.pass) {
     setPass(wsPath);
-    void vscode.window.showInformationMessage('已切回透传，正在重载窗口');
+    nextProxy = false;
+    message = '已切回透传';
   } else if (picked.model) {
     setProxy(wsPath, url, picked.model);
-    void vscode.window.showInformationMessage(`已切换到 ${picked.model}，正在重载窗口`);
+    nextProxy = true;
+    message = `已切换到 ${picked.model}`;
   } else {
     return;
   }
   refreshStatusBar();
 
-  // Claude Code 必须重启窗口才能读到最新 settings.json（baseURL / modelOverrides）。
+  if (!shouldReloadWindow(currentProxy, nextProxy)) {
+    void vscode.window.showInformationMessage(`${message}，无需重载窗口`);
+    return;
+  }
+
+  void vscode.window.showInformationMessage(`${message}，正在重载窗口`);
+  // Claude Code 仅在透传与代理模式互相切换时，才需要重启窗口重新读取设置。
   await vscode.commands.executeCommand('workbench.action.reloadWindow');
 }
