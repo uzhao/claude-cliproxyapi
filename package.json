@@ -1,0 +1,55 @@
+{
+  "name": "claude-cliproxyapi",
+  "displayName": "Claude CLIProxyAPI Switch",
+  "description": "Switch Claude Code between passthrough and local CLIProxyAPI models by rewriting settings.json, no format translation",
+  "version": "0.0.1",
+  "publisher": "uzhao",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "cliproxyapi",
+    "proxy",
+    "model"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeCliProxy.switchModel",
+        "title": "Claude CLIProxyAPI: 切换模型"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Claude CLIProxyAPI",
+        "properties": {
+          "claudeCliProxy.baseUrl": {
+            "type": "string",
+            "default": "http://127.0.0.1:8317",
+            "description": "本地 CLIProxyAPI 地址（不含 /v1）",
+            "scope": "machine"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "tsc -p ./ && node --test \"out/**/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}
