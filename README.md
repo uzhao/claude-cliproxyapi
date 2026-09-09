@@ -8,8 +8,8 @@
 
 - **状态栏单一入口**——点右下角 `Claude: 模型`，弹出菜单选「透传」或从 CLIProxyAPI `/v1/models` 拉到的模型列表。
 - **模型列表实时取自 CLIProxyAPI**——每次打开菜单都 `GET {baseUrl}/v1/models`，取 OpenAI 格式 `data[].id`。
-- **透传**——删除 `.claude/settings.json` 里的 `env.ANTHROPIC_BASE_URL` 与 `modelOverrides`，恢复直连官方。
-- **代理**——写入 `env.ANTHROPIC_BASE_URL` = CLIProxyAPI 地址，并把 `[sonnet, opus, haiku, fable, best, sonnet[1m], opus[1m], fable[1m], opusplan, default]` 全部别名通过 `modelOverrides` 映射到选中的模型 ID。
+- **透传**——删除 `.claude/settings.json` 里的 `env.ANTHROPIC_BASE_URL`、`env.CLAUDE_CODE_DISABLE_ARTIFACT` 与 `modelOverrides`，恢复直连官方。
+- **代理**——写入 `env.ANTHROPIC_BASE_URL` = CLIProxyAPI 地址与 `env.CLAUDE_CODE_DISABLE_ARTIFACT=1`（代理不支持 Artifacts，走代理时禁用），并清掉老版本写入的 `modelOverrides` 残留。
 
 ## 🚀 使用
 
@@ -28,19 +28,16 @@
 写入项目级 `.claude/settings.json`：
 
 ```jsonc
-// 代理（选了 tier-2）
+// 代理
 {
-  "env": { "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317" },
-  "modelOverrides": {
-    "sonnet": "tier-2", "opus": "tier-2", "haiku": "tier-2",
-    "fable": "tier-2", "best": "tier-2",
-    "sonnet[1m]": "tier-2", "opus[1m]": "tier-2",
-    "fable[1m]": "tier-2", "opusplan": "tier-2", "default": "tier-2"
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
+    "CLAUDE_CODE_DISABLE_ARTIFACT": "1"
   }
 }
 
 // 透传
-{} // 删除 env.ANTHROPIC_BASE_URL 与 modelOverrides，其余字段保留
+{} // 删除 env.ANTHROPIC_BASE_URL、env.CLAUDE_CODE_DISABLE_ARTIFACT 与 modelOverrides，其余字段保留
 ```
 
 项目级覆盖优先于全局 `~/.claude/settings.json`，因此透传时只需删除项目级覆盖即可回到你全局设置的默认模型。

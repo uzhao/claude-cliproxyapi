@@ -1,8 +1,8 @@
 {
   "name": "claude-cliproxyapi",
   "displayName": "Claude CLIProxyAPI Switch",
-  "description": "Switch Claude Code between passthrough and local CLIProxyAPI models by rewriting settings.json, no format translation",
-  "version": "0.0.1",
+  "description": "One-click switch for Claude Code between the local CLIProxyAPI proxy and the official API via settings.json",
+  "version": "0.0.4",
   "publisher": "uzhao",
   "license": "MIT",
   "engines": {
@@ -24,8 +24,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "claudeCliProxy.switchModel",
-        "title": "Claude CLIProxyAPI: 切换模型"
+        "command": "claudeCliProxy.toggleProxy",
+        "title": "Claude CLIProxyAPI: 切换代理"
       }
     ],
     "configuration": [
